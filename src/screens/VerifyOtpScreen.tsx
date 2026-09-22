@@ -59,6 +59,7 @@ export default function VerifyOtpScreen({ navigation, route }: VerifyOtpScreenPr
 
   const handleVerify = async () => {
     const enteredCode = otp.join('');
+    // VALIDATION (OTP Length Check): Check karta hai ki user ne 6-digit OTP ke saare 6 boxes fill kiye hain ya nahi
     if (enteredCode.length < 6) {
       Alert.alert('Incomplete Code', 'Please enter all 6 digits of the OTP.');
       return;

@@ -58,7 +58,9 @@ export const FlightSearchCard: React.FC<FlightSearchCardProps> = ({
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
+        <TouchableOpacitygit status
+git pull
+
           style={[styles.tabBtn, tripType === 'multi' && styles.activeTabBtn]}
           onPress={() => onChangeTripType('multi')}
           activeOpacity={0.8}

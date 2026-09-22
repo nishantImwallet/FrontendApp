@@ -11,10 +11,14 @@ export interface Booking {
 }
 
 export const bookingService = {
-  async getUserBookings(userId: number | string): Promise<Booking[]> {
+  async getUserBookings(userId: number | string, token?: string): Promise<Booking[]> {
     try {
       const url = `${API_ENDPOINTS.BOOKINGS}/my-bookings?user_id=${userId}`;
-      const res = await fetch(url);
+      const headers: any = {};
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      const res = await fetch(url, { headers });
       const data = await res.json();
       return data.bookings || [];
     } catch (error) {
@@ -22,11 +26,18 @@ export const bookingService = {
       throw error;
     }
   },
-  async createBooking(bookingData: { user_id: number; flight_id: number; seat_id?: number; passenger_name?: string; seat_number?: string }) {
+  async createBooking(
+    bookingData: { user_id: number; flight_id: number; seat_id?: number; passenger_name?: string; seat_number?: string },
+    token?: string
+  ) {
     try {
+      const headers: any = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
       const res = await fetch(API_ENDPOINTS.BOOKINGS, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(bookingData),
       });
       const data = await res.json();

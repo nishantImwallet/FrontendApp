@@ -25,7 +25,7 @@ export default function OtpLoginScreen({ navigation }: OtpLoginScreenProps) {
   const [codeSent, setCodeSent] = useState(false);
 
   const handleGetOtp = async () => {
-    // validatio phone number and phoneNumber.lenth<
+    // VALIDATION (Mobile Number Check): Check karta hai ki number khali na ho aur kam se kam poore 10 digits ka ho
     if (!phoneNumber || phoneNumber.length < 10) {
       Alert.alert('Validation Error', 'Please enter a valid 10-digit mobile number.');
       return;

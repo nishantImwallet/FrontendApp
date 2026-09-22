@@ -1,0 +1,4 @@
+/Users/nishanttyagi/Development/Imwallet/project_01/FrontendApp/android/app/.cxx/Debug/621ez261/armeabi-v7a/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/foo.dir
+/Users/nishanttyagi/Development/Imwallet/project_01/FrontendApp/android/app/.cxx/Debug/621ez261/armeabi-v7a/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/boo.dir
+/Users/nishanttyagi/Development/Imwallet/project_01/FrontendApp/android/app/.cxx/Debug/621ez261/armeabi-v7a/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/edit_cache.dir
+/Users/nishanttyagi/Development/Imwallet/project_01/FrontendApp/android/app/.cxx/Debug/621ez261/armeabi-v7a/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/rebuild_cache.dir

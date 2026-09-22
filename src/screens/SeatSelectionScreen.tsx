@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,18 +11,28 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { bookingService } from '../services';
+import { notificationService } from '../services/notificationService';
 import AppButton from '../components/common/AppButton';
 
 const SEAT_ROWS = [1, 2, 3, 4, 5, 6, 7, 8];
 const OCCUPIED_SEATS = ['1A', '1B', '2E', '3C', '4F', '5A', '6D', '7B'];
 
 export default function SeatSelectionScreen({ navigation, route }: any) {
-  const { flight, user } = route?.params || {};
+  const { flight, bus, user } = route?.params || {};
+
+  console.log('nishant3 this is the data coming from the bus parmas', bus);
+
+  // Notification permission mangte hain jab screen khule
+  useEffect(() => {
+    notificationService?.requestPermission?.();
+  }, []);
 
   // Form State
   const [selectedSeat, setSelectedSeat] = useState<string>('3A');
   const [passengerName, setPassengerName] = useState(
-    user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Nishant Tyagi'
+    user?.firstName
+      ? `${user.firstName} ${user.lastName || ''}`.trim()
+      : 'Nishant Tyagi',
   );
   const [age, setAge] = useState('24');
   const [gender, setGender] = useState<'Male' | 'Female' | 'Other'>('Male');
@@ -38,7 +48,10 @@ export default function SeatSelectionScreen({ navigation, route }: any) {
 
   const handleSeatPress = (seatId: string) => {
     if (OCCUPIED_SEATS.includes(seatId)) {
-      Alert.alert('Seat Unavailable', `Seat ${seatId} is already occupied by another passenger.`);
+      Alert.alert(
+        'Seat Unavailable',
+        `Seat ${seatId} is already occupied by another passenger.`,
+      );
       return;
     }
     setSelectedSeat(seatId);
@@ -68,9 +81,19 @@ export default function SeatSelectionScreen({ navigation, route }: any) {
       });
 
       if (res.ok) {
+        const pnr = res.data?.booking?.pnr || 'FG-9821';
+        const flightNo = flight?.flight_number || 'AI-202';
+
+        // 🔔 STATUS BAR ME PUSH NOTIFICATION BHEJO:
+        notificationService?.sendFlightBookingNotification?.(
+          pnr,
+          selectedSeat,
+          flightNo,
+        );
+
         Alert.alert(
           '🎉 Booking Confirmed!',
-          `PNR: ${res.data?.booking?.pnr || 'N/A'}\nSeat: ${selectedSeat}\nPassenger: ${passengerName}`,
+          `PNR: ${pnr}\nSeat: ${selectedSeat}\nPassenger: ${passengerName}`,
           [
             {
               text: 'View Boarding Pass 🎫',
@@ -87,13 +110,19 @@ export default function SeatSelectionScreen({ navigation, route }: any) {
               text: 'My Bookings',
               onPress: () => navigation.navigate('Bookings', { user }),
             },
-          ]
+          ],
         );
       } else {
-        Alert.alert('Booking Failed', res.data?.error || 'Unable to book seat.');
+        Alert.alert(
+          'Booking Failed',
+          res.data?.error || 'Unable to book seat.',
+        );
       }
     } catch (error) {
-      Alert.alert('Network Error', 'Cannot connect to server. Please try again.');
+      Alert.alert(
+        'Network Error',
+        'Cannot connect to server. Please try again.',
+      );
     } finally {
       setBookingLoading(false);
     }
@@ -116,7 +145,7 @@ export default function SeatSelectionScreen({ navigation, route }: any) {
         <Text style={styles.sectionTitle}>Tap a Seat:</Text>
 
         <View style={styles.grid}>
-          {SEAT_ROWS.map((row) => (
+          {SEAT_ROWS.map(row => (
             <View key={row} style={styles.row}>
               {['A', 'B', 'C', 'D', 'E', 'F'].map((col, idx) => {
                 const seatId = `${row}${col}`;
@@ -135,7 +164,12 @@ export default function SeatSelectionScreen({ navigation, route }: any) {
                       onPress={() => handleSeatPress(seatId)}
                       disabled={isOccupied}
                     >
-                      <Text style={[styles.seatText, isSelected && styles.seatTextWhite]}>
+                      <Text
+                        style={[
+                          styles.seatText,
+                          isSelected && styles.seatTextWhite,
+                        ]}
+                      >
                         {seatId}
                       </Text>
                     </TouchableOpacity>
@@ -148,7 +182,9 @@ export default function SeatSelectionScreen({ navigation, route }: any) {
 
         {/* Selected Seat Text */}
         <Text style={styles.infoText}>
-          Selected Seat: <Text style={{ fontWeight: 'bold' }}>{selectedSeat}</Text> (₹{flight?.price ? Number(flight.price).toLocaleString() : '4,500'})
+          Selected Seat:{' '}
+          <Text style={{ fontWeight: 'bold' }}>{selectedSeat}</Text> (₹
+          {flight?.price ? Number(flight.price).toLocaleString() : '4,500'})
         </Text>
 
         <View style={styles.line} />
@@ -173,13 +209,17 @@ export default function SeatSelectionScreen({ navigation, route }: any) {
 
         {/* Gender Selection */}
         <View style={styles.genderRow}>
-          {(['Male', 'Female', 'Other'] as const).map((g) => (
+          {(['Male', 'Female', 'Other'] as const).map(g => (
             <TouchableOpacity
               key={g}
               style={[styles.genderBtn, gender === g && styles.genderBtnActive]}
               onPress={() => setGender(g)}
             >
-              <Text style={gender === g ? styles.genderTextActive : styles.genderText}>
+              <Text
+                style={
+                  gender === g ? styles.genderTextActive : styles.genderText
+                }
+              >
                 {g}
               </Text>
             </TouchableOpacity>

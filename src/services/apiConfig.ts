@@ -4,7 +4,7 @@
 // - Android Emulator default loopback: http://10.0.2.2:5000/api
 // - Local Wi-Fi IP (e.g. 192.168.x.x): http://<YOUR_IP>:5000/api
 
-export const BASE_URL = 'http://localhost:5000/api';
+export const BASE_URL = 'http://10.0.2.2:5000/api';
 
 export const API_ENDPOINTS = {
   LOGIN: `${BASE_URL}/auth/login`,

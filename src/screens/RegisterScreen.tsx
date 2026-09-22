@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { authService } from '../services';
+import { COLORS } from '../theme';
 
 export default function RegisterScreen({ navigation }: { navigation: any }) {
   const [firstName, setFirstName] = useState('');
@@ -24,15 +25,78 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // 1. Email Format Validator: Check karta hai ki email sahi format me ho (jaise user@example.com)
+  const isValidEmail = (value: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(value);
+  };
+
+  // 2. Phone Cleaning Helper: Spaces, dashes aur country code (+91 ya 0) hata kar clean 10-digit number banata hai
+  const cleanPhoneNumber = (value: string): string => {
+    const digits = value.replace(/\D/g, '');
+    if (digits.length === 12 && digits.startsWith('91')) {
+      return digits.slice(2);
+    }
+    if (digits.length === 11 && digits.startsWith('0')) {
+      return digits.slice(1);
+    }
+    return digits;
+  };
+
+  // 3. Mobile Number Validator: Check karta hai ki number poore 10 digits ka valid mobile number ho
+  const isValidPhone = (value: string): boolean => {
+    const cleaned = cleanPhoneNumber(value);
+    return /^[6-9]\d{9}$/.test(cleaned) || /^\d{10}$/.test(cleaned);
+  };
+
   const handleRegister = async () => {
+    // VALIDATION 1 (Name Check): First name khali nahi hona chahiye
     if (!firstName.trim()) {
       Alert.alert('Validation Error', 'First name is required.');
       return;
     }
-    if (!email.trim() || !password) {
-      Alert.alert('Validation Error', 'Please fill in email and password.');
+
+    // VALIDATION 2 (Email Required & Format Check): Email khali na ho aur standard format me ho
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      Alert.alert('Validation Error', 'Email address is required.');
       return;
     }
+    if (!isValidEmail(trimmedEmail)) {
+      Alert.alert(
+        'Validation Error',
+        'Please enter a valid email address (e.g. user@example.com).'
+      );
+      return;
+    }
+
+    // VALIDATION 3 (Phone Number Required & Format Check): Mobile number khali na ho aur poore 10 digits ka ho
+    const trimmedPhone = phone.trim();
+    const cleanedPhone = cleanPhoneNumber(trimmedPhone);
+    if (!trimmedPhone) {
+      Alert.alert('Validation Error', 'Mobile number is required.');
+      return;
+    }
+    if (!isValidPhone(trimmedPhone)) {
+      const digitsOnly = trimmedPhone.replace(/\D/g, '');
+      Alert.alert(
+        'Validation Error',
+        `Please enter a valid 10-digit mobile number.${digitsOnly.length > 0 ? ` (Entered ${digitsOnly.length} digits)` : ''}`
+      );
+      return;
+    }
+
+    // VALIDATION 4 (Password Required & Length Check): Password khali na ho aur kam se kam 6 characters ka ho
+    if (!password) {
+      Alert.alert('Validation Error', 'Password is required.');
+      return;
+    }
+    if (password.length < 6) {
+      Alert.alert('Validation Error', 'Password must be at least 6 characters long.');
+      return;
+    }
+
+    // VALIDATION 5 (Terms & Conditions Check): App policies agree karna zaroori hai
     if (!agreeTerms) {
       Alert.alert('Terms & Conditions', 'Please agree to FlyGo Terms and Privacy Policy to continue.');
       return;
@@ -43,8 +107,8 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
       const { ok, data } = await authService.register({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        email: email.trim(),
-        phone: phone.trim(),
+        email: trimmedEmail.toLowerCase(),
+        phone: cleanedPhone,
         password,
         role: 'user',
       });
@@ -136,7 +200,7 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
                   <Text style={styles.inputPrefixIcon}>👤</Text>
                   <TextInput
                     style={styles.input}
-                    placeholder=""
+                    placeholder="e.g. Rahul"
                     placeholderTextColor="#94A3B8"
                     value={firstName}
                     onChangeText={setFirstName}
@@ -149,7 +213,7 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
                 <View style={styles.inputWrapper}>
                   <TextInput
                     style={styles.inputNoIcon}
-                    placeholder=""
+                    placeholder="e.g. Sharma"
                     placeholderTextColor="#94A3B8"
                     value={lastName}
                     onChangeText={setLastName}
@@ -163,14 +227,14 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
               <Text style={styles.label}>Email address</Text>
               <View style={styles.inputWrapper}>
                 <Text style={styles.inputPrefixIcon}>✉️</Text>
-      <TextInput
-        style={styles.input}
-                  placeholder=""
+                <TextInput
+                  style={styles.input}
+                  placeholder="e.g. user@example.com"
                   placeholderTextColor="#94A3B8"
                   keyboardType="email-address"
                   autoCapitalize="none"
-        value={email}
-        onChangeText={setEmail}
+                  value={email}
+                  onChangeText={setEmail}
                 />
               </View>
             </View>
@@ -189,9 +253,10 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
                   <Text style={styles.phoneIcon}>📞</Text>
                   <TextInput
                     style={styles.phoneInput}
-                    placeholder=""
+                    placeholder="10-digit number"
                     placeholderTextColor="#94A3B8"
                     keyboardType="phone-pad"
+                    maxLength={10}
                     value={phone}
                     onChangeText={setPhone}
                   />
@@ -201,17 +266,17 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
 
             {/* Password */}
             <View style={styles.fieldGroup}>
-      <Text style={styles.label}>Password</Text>
+              <Text style={styles.label}>Password</Text>
               <View style={styles.inputWrapper}>
                 <Text style={styles.inputPrefixIcon}>🔒</Text>
-        <TextInput
+                <TextInput
                   style={[styles.input, styles.passwordInput]}
-                  placeholder=""
+                  placeholder="Min. 6 characters"
                   placeholderTextColor="#94A3B8"
                   secureTextEntry={!showPassword}
-          value={password}
-          onChangeText={setPassword}
-        />
+                  value={password}
+                  onChangeText={setPassword}
+                />
                 <TouchableOpacity
                   style={styles.eyeBtn}
                   onPress={() => setShowPassword(!showPassword)}
@@ -287,7 +352,7 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f8f9ff',
+    backgroundColor: COLORS.background,
   },
   flexOne: {
     flex: 1, 
@@ -306,15 +371,15 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.cardBg,
     borderWidth: 1,
-    borderColor: '#121c2a',
+    borderColor: COLORS.borderDark,
     alignItems: 'center',
     justifyContent: 'center',
   },
   backArrow: {
     fontSize: 26,
-    color: '#121c2a',
+    color: COLORS.textDark,
     lineHeight: 28,
     fontWeight: '300',
   },
@@ -325,16 +390,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: COLORS.cardBg,
     borderWidth: 1,
-    // borderColor: '#e2e8f0',
+    borderColor: COLORS.borderLight,
   
   },
   brandIconBox: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#121c2a',
+    backgroundColor: COLORS.borderDark,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -344,7 +409,7 @@ const styles = StyleSheet.create({
   brandName: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#0059bb',
+    color: COLORS.primary,
     letterSpacing: -0.3,
   },
   helpBtn: {
@@ -354,9 +419,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.cardBg,
     borderWidth: 1,
-    borderColor: '#121c2a'
+    borderColor: COLORS.borderDark,
   },
   helpIcon: {
     fontSize: 13,
@@ -364,7 +429,7 @@ const styles = StyleSheet.create({
   helpText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#565e74',
+    color: COLORS.textMuted,
   },
 
   /* INTRO */
@@ -377,7 +442,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#eff4ff',
+    backgroundColor: COLORS.primaryLight,
     borderWidth: 1,
     borderColor: 'rgba(0, 89, 187, 0.2)',
     paddingHorizontal: 10,
@@ -391,33 +456,29 @@ const styles = StyleSheet.create({
   securityPillText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#0059bb',
+    color: COLORS.primary,
     letterSpacing: 0.5,
   },
   heading: {
     fontSize: 26,
     fontWeight: '800',
-    color: '#121c2a',
+    color: COLORS.textDark,
     letterSpacing: -0.5,
   },
   subheading: {
     fontSize: 13,
-    color: '#565e74',
+    color: COLORS.textMuted,
     marginTop: 4,
   },
 
   /* FORM CARD */
   formCard: {
     marginTop:60, 
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.cardBg,
     borderRadius: 6,
     padding: 16,
     borderWidth: 1,
-    // elevation: 4,
-    // shadowColor: '#0f172a',
-    // shadowOpacity: 0.06,
-    // shadowRadius: 16,
-    // shadowOffset: { width: 0, height: 4 },
+    borderColor: COLORS.borderDark,
   },
   nameRow: {
     flexDirection: 'row',
@@ -433,15 +494,15 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 12,
     fontWeight: '600',
-    // color: '#414754',
+    color: COLORS.textDark,
     marginBottom: 6,
      },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.cardBg,
     borderWidth: 1,
-    // borderColor: '#c1c6d7',
+    borderColor: COLORS.borderLight,
     borderRadius: 6,
     paddingHorizontal: 12,
     height: 48,
@@ -449,18 +510,18 @@ const styles = StyleSheet.create({
   inputPrefixIcon: {
     fontSize: 16,
     marginRight: 8,
-     color: '#0059bb',
+    color: COLORS.primary,
   },
   input: {
     flex: 1,
     fontSize: 14,
-    // color: '#121c2a',
+    color: COLORS.textDark,
     height: '100%',
   },
   inputNoIcon: {
     flex: 1,
     fontSize: 14,
-    // color: '#121c2a',
+    color: COLORS.textDark,
     height: '100%',
     paddingHorizontal: 4,
   },
@@ -468,7 +529,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    // borderColor: '#c1c6d7',
+    borderColor: COLORS.borderLight,
     borderRadius: 6,
     height: 48,
     overflow: 'hidden',
@@ -479,9 +540,9 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 10,
     height: '100%',
-    backgroundColor: '#eff4ff',
+    backgroundColor: COLORS.primaryLight,
     borderRightWidth: 1,
-    borderRightColor: '#c1c6d7',
+    borderRightColor: COLORS.borderLight,
   },
   flagIcon: {
     fontSize: 15,
@@ -489,11 +550,11 @@ const styles = StyleSheet.create({
   countryCode: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#121c2a',
+    color: COLORS.textDark,
   },
   dropdownArrow: {
     fontSize: 12,
-    color: '#565e74',
+    color: COLORS.textMuted,
   },
   phoneInputArea: {
     flex: 1,
@@ -509,7 +570,7 @@ const styles = StyleSheet.create({
   phoneInput: {
     flex: 1,
     fontSize: 14,
-    color: '#121c2a',
+    color: COLORS.textDark,
     height: '100%',
   },
   passwordInput: {
@@ -533,7 +594,7 @@ const styles = StyleSheet.create({
   },
   hintText: {
     fontSize: 11,
-    color: '#565e74',
+    color: COLORS.textMuted,
   },
   termsRow: {
     flexDirection: 'row',
@@ -547,18 +608,18 @@ const styles = StyleSheet.create({
     height: 18,
     borderRadius: 4,
     borderWidth: 1.5,
-    borderColor: '#c1c6d7',
+    borderColor: COLORS.borderLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.cardBg,
   },
   checkboxActive: {
-    backgroundColor: '#0059bb',
-    borderColor: '#0059bb',
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   checkmark: {
-    color: '#ffffff',
+    color: COLORS.textLight,
     fontSize: 11,
     fontWeight: '900',
     lineHeight: 12,
@@ -566,34 +627,29 @@ const styles = StyleSheet.create({
   termsText: {
     flex: 1,
     fontSize: 12,
-    color: '#565e74',
+    color: COLORS.textMuted,
     lineHeight: 16,
   },
   termsLink: {
-    color: '#0059bb',
+    color: COLORS.primary,
     fontWeight: '600',
   },
   registerBtn: {
     height: 50,
-    backgroundColor: '#0059bb',
+    backgroundColor: COLORS.primary,
     borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    // elevation: 4,
-    // shadowColor: '#0059bb',
-    // shadowOpacity: 0.35,
-    // shadowRadius: 10,
-    // shadowOffset: { width: 0, height: 4 },
   },
   registerBtnText: {
-    color: '#ffffff',
+    color: COLORS.textLight,
     fontSize: 15,
     fontWeight: '700',
   },
   btnArrow: {
-    color: '#ffffff',
+    color: COLORS.textLight,
     fontSize: 16,
     fontWeight: '700',
   },
@@ -610,12 +666,12 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: COLORS.borderLight,
   },
   dividerText: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#717786',
+    color: COLORS.textMuted,
     letterSpacing: 0.8,
     marginHorizontal: 10,
   },
@@ -628,8 +684,8 @@ const styles = StyleSheet.create({
     height: 46,
     borderRadius: 23,
     borderWidth: 1,
-    borderColor: '#c1c6d7',
-    backgroundColor: '#ffffff',
+    borderColor: COLORS.borderLight,
+    backgroundColor: COLORS.cardBg,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -641,7 +697,7 @@ const styles = StyleSheet.create({
   socialBtnText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#121c2a',
+    color: COLORS.textDark,
   },
   loginPromptRow: {
     flexDirection: 'row',
@@ -651,12 +707,12 @@ const styles = StyleSheet.create({
   },
   loginPromptText: {
     fontSize: 13,
-    // color: '#565e74',
+    color: COLORS.textMuted,
   },
   loginLink: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#0059bb', 
+    color: COLORS.primary, 
   },
 
   /* FOOTER */
@@ -668,19 +724,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#e6eeff',
+    backgroundColor: COLORS.primaryLight,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#d9e3f6',
+    borderColor: COLORS.borderLight,
   },
   lockIcon: {
     fontSize: 12,
   },
   encryptionText: {
     fontSize: 11,
-    color: '#565e74',
+    color: COLORS.textMuted,
     fontWeight: '500',
   },
 });

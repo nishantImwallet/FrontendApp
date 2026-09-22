@@ -4,3 +4,4 @@ export * from './flightService';
 export * from './authService';
 export * from './bookingService';
 export * from './busService';
+export * from './notificationService';

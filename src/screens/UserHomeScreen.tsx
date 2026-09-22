@@ -12,9 +12,9 @@ import {
   TextInput,
   ActivityIndicator,
 } from 'react-native';
-import { airportService, flightService, bookingService, Airport,busService } from '../services';
-import { FlightSearchCard, AirportSelectModal } from '../components';
-import {BusSearchCard} from '../components/cards/BusSearchCard';
+import { airportService, flightService, bookingService, Airport, busService } from '../services';
+import { FlightSearchCard, AirportSelectModal, BusCitySelectModal } from '../components';
+import { BusSearchCard } from '../components/cards/BusSearchCard';
 
 
 export default function UserHomeScreen({ navigation, route }: any) {
@@ -103,9 +103,18 @@ export default function UserHomeScreen({ navigation, route }: any) {
     setIsModalOpen(false);
   };
   const openBusModalFor = (target: 'FROM' | 'TO') => {
-  setBusModalTarget(target);
-  setIsBusModalOpen(true);
-};
+    setBusModalTarget(target);
+    setIsBusModalOpen(true);
+  };
+
+  const handleSelectBusCity = (city: string) => {
+    if (busModalTarget === 'FROM') {
+      setFromBusCity(city);
+    } else {
+      setToBusCity(city);
+    }
+    setIsBusModalOpen(false);
+  };
 
 
 
@@ -175,13 +184,9 @@ export default function UserHomeScreen({ navigation, route }: any) {
   };
 
 
-  useEffect(()=>{
-    handleSearchBus();
-    
-  },[])
+
 
 const handleSearchBus = async() => {
-  console.log("handleSearchBus is being called here");
    if (!fromBusCity || !toBusCity) {
     Alert.alert('Selection Required', 'Please select both source and destination cities.');
     return;
@@ -196,13 +201,23 @@ const handleSearchBus = async() => {
   const travelDate = '2026-10-20';
   
   try{
-    const res = await busService.searchBuses({
+    const buslist = await busService.searchBuses({
      origin:fromBusCity,
      destination:toBusCity,
      date:travelDate
      })
 
-console.log("This is the respone coming from the bus search api",res);
+console.log("This is the respone coming from the bus search api",buslist.length);
+navigation.navigate('BusResults', {
+        buses: buslist,
+        user,
+        searchParams: {
+          origin: fromBusCity,
+          destination: toBusCity,
+          date: travelDate,
+          tripType,
+        },
+      });
 
   }
   catch(error)
@@ -213,42 +228,42 @@ console.log("This is the respone coming from the bus search api",res);
 
 
 // const handleSearchBus = async () => {
-//   // 1. Validation check
-//   if (!fromBusCity || !toBusCity) {
-//     Alert.alert('Selection Required', 'Please select both source and destination cities.');
-//     return;
-//   }
+  // 1. Validation check
+  // if (!fromBusCity || !toBusCity) {
+  //   Alert.alert('Selection Required', 'Please select both source and destination cities.');
+  //   return;
+  // }
 
-//   if (fromBusCity.toLowerCase() === toBusCity.toLowerCase()) {
-//     Alert.alert('Invalid Route', 'Source and Destination cannot be the same city.');
-//     return;
-//   }
+  // if (fromBusCity.toLowerCase() === toBusCity.toLowerCase()) {
+  //   Alert.alert('Invalid Route', 'Source and Destination cannot be the same city.');
+  //   return;
+  // }
 
-//   try {
-//     // 2. Loading state on karo
-//     setIsSearchingBus(true);
+  // try {
+  //   // 2. Loading state on karo
+  //   setIsSearchingBus(true);
 
-//     const travelDate = '2026-10-15'; // Ya jo state me selected date ho
+  //   const travelDate = '2026-10-15'; // Ya jo state me selected date ho
 
-//     // 3. API Call karo
-//     const busList = await busService.searchBuses({
-//       origin: fromBusCity,
-//       destination: toBusCity,
-//       date: travelDate,
-//     });
+  //   // 3. API Call karo
+  //   const busList = await busService.searchBuses({
+  //     origin: fromBusCity,
+  //     destination: toBusCity,
+  //     date: travelDate,
+  //   });
 
-//     console.log('[BUS SEARCH RESULTS TOTAL]:', busList.length);
+  //   console.log('[BUS SEARCH RESULTS TOTAL]:', busList.length);
 
-//     // 4. Result Screen par navigate karo data pass karke
-//     navigation.navigate('BusResults', {
-//       buses: busList,
-//       user,
-//       searchParams: {
-//         origin: fromBusCity,
-//         destination: toBusCity,
-//         date: travelDate,
-//       },
-//     });
+    // 4. Result Screen par navigate karo data pass karke
+    // navigation.navigate('BusResults', {
+    //   buses: busList,
+    //   user,
+    //   searchParams: {
+    //     origin: fromBusCity,
+    //     destination: toBusCity,
+    //     date: travelDate,
+    //   },
+    // });
 
 //   } catch (error) {
 //     console.error('Error fetching bus data:', error);
@@ -369,6 +384,15 @@ console.log("This is the respone coming from the bus search api",res);
         selectedAirport={selectedAirport}
         onClose={() => setIsModalOpen(false)}
         onSelectAirport={handleSelectAirport}
+      />
+
+      {/* BUS CITY SELECTOR BOTTOM SHEET MODAL */}
+      <BusCitySelectModal
+        visible={isBusModalOpen}
+        target={busModalTarget}
+        selectedCity={busModalTarget === 'FROM' ? fromBusCity : toBusCity}
+        onClose={() => setIsBusModalOpen(false)}
+        onSelectCity={handleSelectBusCity}
       />
 
     </SafeAreaView>

@@ -15,6 +15,7 @@ import BookingsScreen from './src/screens/BookingsScreen';
 import SavedTripsScreen from './src/screens/SavedTripsScreen';
 import SeatSelectionScreen from './src/screens/SeatSelectionScreen';
 import BoardingPassScreen from './src/screens/BoardingPassScreen';
+import BusResultsScreen from './src/screens/BusResultsScreen';
 
 
 //Define the type of the navigation stack parameters
@@ -31,6 +32,8 @@ export type RootStackParamList = {
   SavedTrips: { user: any };
   SeatSelection: { user?: any; flight?: any; flights?: any[] };
   BoardingPass: { bookingId?: number | string; bookingData?: any };
+  BusResults:{buses:any[];searchParams:any}
+
 
 };
 
@@ -101,6 +104,13 @@ export default function App(): React.JSX.Element {
           //title is set to admin dashboard so that the admin knows that he is on the admin dashboard
           component={AdminHomeScreen as React.ComponentType<any>} 
           options={{ title: 'Admin Dashboard', headerBackVisible: false }} 
+        />
+
+        <Stack.Screen
+        name="BusResults"
+        component={BusResultsScreen as React.ComponentType<any>}
+                   options={{headerShown:false}}
+
         />
       </Stack.Navigator>
     </NavigationContainer>

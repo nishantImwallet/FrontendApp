@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: '#121c2a',
     gap: 6,
   },
   flightCard: {
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   bookBtn: {
     marginTop: 10,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 6,
     backgroundColor: '#0059bb',
     alignItems: 'center',
     justifyContent: 'center',
