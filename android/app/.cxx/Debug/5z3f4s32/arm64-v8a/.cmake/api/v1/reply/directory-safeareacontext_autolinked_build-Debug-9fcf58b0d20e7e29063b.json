@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "safeareacontext_autolinked_build",
+		"source" : "C:/Users/Admin/Desktop/task_09_09_2026/FrontendApp/node_modules/react-native-safe-area-context/android/src/main/jni"
+	}
+}

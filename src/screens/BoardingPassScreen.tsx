@@ -74,158 +74,93 @@ export default function BoardingPassScreen({ navigation, route }: any) {
   });
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
 
-      {/* Header */}
+      {/* Basic Title Bar */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>←</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Digital Boarding Pass</Text>
-        <TouchableOpacity style={styles.shareBtn} onPress={handleShare}>
-          <Text style={{ fontSize: 16 }}>📤</Text>
+        <Text style={styles.title}>Boarding Pass</Text>
+        <TouchableOpacity onPress={handleShare}>
+          <Text style={styles.shareText}>Share</Text>
         </TouchableOpacity>
       </View>
 
       {loading ? (
-        <View style={styles.centerLoading}>
-          <ActivityIndicator size="large" color="#0070ea" />
-          <Text style={styles.loadingText}>Generating Boarding Pass...</Text>
+        <View style={styles.center}>
+          <ActivityIndicator size="small" color="#000" />
+          <Text>Loading...</Text>
         </View>
       ) : (
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Main Ticket Card */}
-          <View style={styles.ticketCard}>
-            {/* Top Airline Banner */}
-            <View style={styles.ticketTopBanner}>
-    <View>
-                <Text style={styles.airlineName}>{flight.airline || 'IndiGo'}</Text>
-                <Text style={styles.flightNumber}>{flight.flight_number || '6E-204'} • Airbus A320</Text>
-    </View>
-              <View style={styles.statusBadge}>
-                <Text style={styles.statusText}>{ticket.booking_status || 'CONFIRMED'}</Text>
-              </View>
+        <ScrollView contentContainerStyle={styles.content}>
+          <View style={styles.card}>
+            <View style={styles.row}>
+              <Text style={styles.label}>Airline</Text>
+              <Text style={styles.value}>{flight.airline} ({flight.flight_number})</Text>
             </View>
 
-            {/* Route & Timeline Section */}
-            <View style={styles.routeSection}>
-              <View style={styles.routeCol}>
-                <Text style={styles.airportCode}>{flight.origin || 'DEL'}</Text>
-                <Text style={styles.cityName}>Delhi</Text>
-                <Text style={styles.flightTime}>{departureTime}</Text>
-              </View>
-
-              <View style={styles.flightVisual}>
-                <Text style={styles.flightDuration}>2h 15m</Text>
-                <View style={styles.planeLine}>
-                  <View style={styles.lineDot} />
-                  <View style={styles.lineBar} />
-                  <Text style={{ fontSize: 14, color: '#0070ea' }}>✈️</Text>
-                  <View style={styles.lineBar} />
-                  <View style={styles.lineDot} />
-                </View>
-                <Text style={styles.nonStopText}>Non-stop</Text>
-              </View>
-
-              <View style={[styles.routeCol, { alignItems: 'flex-end' }]}>
-                <Text style={styles.airportCode}>{flight.destination || 'BOM'}</Text>
-                <Text style={styles.cityName}>Mumbai</Text>
-                <Text style={styles.flightTime}>08:15 AM</Text>
-              </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Status</Text>
+              <Text style={styles.value}>{ticket.booking_status || 'CONFIRMED'}</Text>
             </View>
 
-            {/* 2x2 Details Grid */}
-            <View style={styles.detailsGrid}>
-              <View style={styles.detailItem}>
-                <Text style={styles.detailLabel}>PASSENGER</Text>
-                <Text style={styles.detailVal} numberOfLines={1}>
-                  {ticket.passenger_name || 'Nishant Tyagi'}
-                </Text>
-              </View>
+            <View style={styles.line} />
 
-              <View style={styles.detailItem}>
-                <Text style={styles.detailLabel}>DATE</Text>
-                <Text style={styles.detailVal}>{departureDate}</Text>
-              </View>
-
-              <View style={styles.detailItem}>
-                <Text style={styles.detailLabel}>SEAT</Text>
-                <Text style={[styles.detailVal, { color: '#0070ea', fontWeight: '800' }]}>
-                  {ticket.seat_number || '3A'}
-                </Text>
-              </View>
-
-              <View style={styles.detailItem}>
-                <Text style={styles.detailLabel}>GATE / TERMINAL</Text>
-                <Text style={styles.detailVal}>
-                  {flight.gate || '12B'} • {flight.terminal || 'T3'}
-                </Text>
-              </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>From</Text>
+              <Text style={styles.value}>{flight.origin} - {departureTime}</Text>
             </View>
 
-            {/* Perforated Divider with Circular Notches */}
-            <View style={styles.perforatedSection}>
-              <View style={[styles.circleNotch, styles.leftNotch]} />
-              <View style={styles.dashedDivider} />
-              <View style={[styles.circleNotch, styles.rightNotch]} />
+            <View style={styles.row}>
+              <Text style={styles.label}>To</Text>
+              <Text style={styles.value}>{flight.destination} - 08:15 AM</Text>
             </View>
 
-            {/* Bottom Barcode / PNR Section */}
-            <View style={styles.ticketBottomSection}>
-              <View style={styles.pnrRow}>
-                <Text style={styles.pnrLabel}>BOOKING REFERENCE (PNR)</Text>
-                <Text style={styles.pnrCode}>{ticket.pnr || '4B9E2A'}</Text>
-              </View>
+            <View style={styles.line} />
 
-              {/* Barcode Visual Representation */}
-              <View style={styles.barcodeWrapper}>
-                <View style={styles.barcodeLines}>
-                  {[3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 2, 4, 1, 2, 3, 1, 4, 2, 3, 1, 2, 4, 1].map((w, i) => (
-                    <View
-                      key={i}
-                      style={{
-                        width: w * 2.2,
-                        height: 52,
-                        backgroundColor: '#121c2a',
-                        marginHorizontal: 1.5,
-                      }}
-                    />
-                  ))}
-                </View>
-                <Text style={styles.barcodeSubText}>
-                  {ticket.pnr || '4B9E2A'} • SEAT {ticket.seat_number || '3A'} • FLYGO-ETICKET
-                </Text>
-              </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Passenger</Text>
+              <Text style={styles.value}>{ticket.passenger_name || 'Nishant Tyagi'}</Text>
+            </View>
 
-              <Text style={styles.gateNoticeText}>
-                ⚠️ Gate closes 25 minutes prior to departure. Please show this screen at Security & Boarding.
-              </Text>
+            <View style={styles.row}>
+              <Text style={styles.label}>Date</Text>
+              <Text style={styles.value}>{departureDate}</Text>
+            </View>
+
+            <View style={styles.row}>
+              <Text style={styles.label}>Seat</Text>
+              <Text style={styles.value}>{ticket.seat_number || '3A'}</Text>
+            </View>
+
+            <View style={styles.row}>
+              <Text style={styles.label}>Gate / Terminal</Text>
+              <Text style={styles.value}>{flight.gate || '12B'} / {flight.terminal || 'T3'}</Text>
+            </View>
+
+            <View style={styles.line} />
+
+            <View style={styles.row}>
+              <Text style={styles.label}>PNR</Text>
+              <Text style={[styles.value, styles.pnr]}>{ticket.pnr || '4B9E2A'}</Text>
             </View>
           </View>
 
-          {/* Action Buttons */}
-          <View style={styles.actionRow}>
-            <TouchableOpacity
-              style={styles.doneBtn}
-              onPress={() => navigation.navigate('UserHome')}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.doneBtnText}>Back to Home</Text>
-            </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.btnPrimary}
+            onPress={() => navigation.navigate('UserHome')}
+          >
+            <Text style={styles.btnPrimaryText}>Go to Home</Text>
+          </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.myBookingsBtn}
-              onPress={() => navigation.navigate('Bookings')}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.myBookingsBtnText}>View All Bookings →</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={styles.btnSecondary}
+            onPress={() => navigation.navigate('Bookings')}
+          >
+            <Text style={styles.btnSecondaryText}>View Bookings</Text>
+          </TouchableOpacity>
         </ScrollView>
       )}
     </SafeAreaView>
@@ -241,284 +176,82 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#ffffff',
+    padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#eff4ff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderBottomColor: '#eee',
   },
   backText: {
-    fontSize: 20,
-    color: '#0059bb',
+    fontSize: 16,
+    color: '#0066cc',
+  },
+  title: {
+    fontSize: 18,
     fontWeight: 'bold',
   },
-  headerTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#121c2a',
+  shareText: {
+    fontSize: 16,
+    color: '#0066cc',
   },
-  shareBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#eff4ff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  centerLoading: {
+  center: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
+    alignItems: 'center',
+    gap: 8,
   },
-  loadingText: {
-    fontSize: 13,
-    color: '#64748b',
-  },
-  scroll: {
-    flex: 1,
-    backgroundColor: '#f8f9ff',
-  },
-  scrollContent: {
+  content: {
     padding: 16,
-    paddingBottom: 36,
   },
-  ticketCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 24,
+  card: {
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    overflow: 'hidden',
-    shadowColor: '#0f172a',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 4,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 20,
   },
-  ticketTopBanner: {
-    backgroundColor: '#0059bb',
-    padding: 20,
+  row: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    paddingVertical: 6,
   },
-  airlineName: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#ffffff',
-  },
-  flightNumber: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginTop: 2,
-  },
-  statusBadge: {
-    backgroundColor: '#10b981',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#ffffff',
-    letterSpacing: 0.5,
-  },
-  routeSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 20,
-    backgroundColor: '#ffffff',
-  },
-  routeCol: {
-    width: 80,
-  },
-  airportCode: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: '#121c2a',
-  },
-  cityName: {
-    fontSize: 12,
-    color: '#64748b',
-    marginTop: 2,
-  },
-  flightTime: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#0059bb',
-    marginTop: 4,
-  },
-  flightVisual: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  flightDuration: {
-    fontSize: 10,
-    color: '#94a3b8',
-    marginBottom: 4,
-  },
-  planeLine: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  lineBar: {
-    width: 24,
-    height: 1.5,
-    backgroundColor: '#cbd5e1',
-  },
-  lineDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#0070ea',
-  },
-  nonStopText: {
-    fontSize: 10,
-    color: '#10b981',
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  detailsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    gap: 16,
-  },
-  detailItem: {
-    width: '45%',
-  },
-  detailLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#94a3b8',
-    letterSpacing: 0.5,
-  },
-  detailVal: {
+  label: {
+    color: '#666',
     fontSize: 14,
-    fontWeight: '700',
-    color: '#121c2a',
-    marginTop: 4,
   },
-  perforatedSection: {
-    height: 32,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    position: 'relative',
+  value: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#000',
   },
-  circleNotch: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#f8f9ff',
-    position: 'absolute',
-    top: 4,
+  pnr: {
+    fontWeight: 'bold',
+    fontSize: 16,
   },
-  leftNotch: {
-    left: -12,
-  },
-  rightNotch: {
-    right: -12,
-  },
-  dashedDivider: {
-    flex: 1,
+  line: {
     height: 1,
-    marginHorizontal: 18,
+    backgroundColor: '#eee',
+    marginVertical: 10,
+  },
+  btnPrimary: {
+    backgroundColor: '#0066cc',
+    paddingVertical: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  btnPrimaryText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  btnSecondary: {
     borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderStyle: 'dashed',
-  },
-  ticketBottomSection: {
-    padding: 20,
-    paddingTop: 12,
-    backgroundColor: '#ffffff',
+    borderColor: '#ccc',
+    paddingVertical: 12,
+    borderRadius: 6,
     alignItems: 'center',
   },
-  pnrRow: {
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  pnrLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#94a3b8',
-    letterSpacing: 0.5,
-  },
-  pnrCode: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: '#0059bb',
-    marginTop: 4,
-    letterSpacing: 2,
-  },
-  barcodeWrapper: {
-    backgroundColor: '#f8f9ff',
-    borderRadius: 12,
-    padding: 14,
-    alignItems: 'center',
-    width: '100%',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  barcodeLines: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  barcodeSubText: {
-    fontSize: 10,
-    color: '#64748b',
-    marginTop: 8,
-    letterSpacing: 1,
-  },
-  gateNoticeText: {
-    fontSize: 11,
-    color: '#94a3b8',
-    textAlign: 'center',
-    marginTop: 16,
-    lineHeight: 16,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 20,
-  },
-  doneBtn: {
-    flex: 1,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#eff4ff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  doneBtnText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#0059bb',
-  },
-  myBookingsBtn: {
-    flex: 1,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#0070ea',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  myBookingsBtnText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#ffffff',
+  btnSecondaryText: {
+    color: '#333',
+    fontSize: 15,
   },
 });

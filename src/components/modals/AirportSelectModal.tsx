@@ -132,7 +132,7 @@ export const AirportSelectModal: React.FC<AirportSelectModalProps> = ({
           {/* Search Input Bar */}
           <View style={styles.sheetSearchContainer}>
             <View style={styles.sheetInputBox}>
-              <Text style={{ fontSize: 16, color: '#0059bb', marginRight: 8 }}>🔍</Text>
+              {/* <Text style={{ fontSize: 16, color: '#0059bb', marginRight: 8 }}>🔍</Text> */}
               <TextInput
                 style={styles.sheetInput}
                 placeholder="Search city or IATA code (DEL, BOM, DXB)"
@@ -158,7 +158,7 @@ export const AirportSelectModal: React.FC<AirportSelectModalProps> = ({
             </View>
 
             {/* Location Auto-detect Pill */}
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.locationPill}
               onPress={() => {
                 fetchAirports('DEL');
@@ -176,7 +176,7 @@ export const AirportSelectModal: React.FC<AirportSelectModalProps> = ({
                 </View>
               </View>
               <Text style={styles.detectText}>Detect ›</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
 
           {/* Quick Select Filter Chips */}
@@ -200,9 +200,9 @@ export const AirportSelectModal: React.FC<AirportSelectModalProps> = ({
                   }}
                   activeOpacity={0.75}
                 >
-                  <Text style={{ fontSize: 12, color: isActive ? '#0059bb' : '#565e74' }}>
+                  {/* <Text style={{ fontSize: 12, color: isActive ? '#0059bb' : '#565e74' }}>
                     🛫
-                  </Text>
+                  </Text> */}
                   <Text style={[styles.chipText, isActive && styles.chipTextActive]}>
                     {chip.code} - {chip.city}
                   </Text>
@@ -237,31 +237,31 @@ export const AirportSelectModal: React.FC<AirportSelectModalProps> = ({
                     onPress={() => handleSelect(item)}
                     activeOpacity={0.8}
                   >
-                    {isSelected && <View style={styles.activeStrip} />}
+                    {/* {isSelected && <View style={styles.activeStrip} />} */}
 
                     <View style={styles.resultLeft}>
-                      <View
+                      {/* <View
                         style={[
                           styles.resultIconBox,
                           isSelected && { backgroundColor: '#0059bb' },
-                        ]}
-                      >
-                        <Text style={{ fontSize: 18, color: isSelected ? '#ffffff' : '#0059bb' }}>
+                        ]} */}
+                      
+                        {/* <Text style={{ fontSize: 18, color: isSelected ? '#ffffff' : '#0059bb' }}>
                           🛫
-                        </Text>
-                      </View>
+                        </Text> */}
+                      {/* </View> */}
                       <View style={{ flex: 1 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                           <Text style={styles.cityName}>
                             {item.city || item.name}, {item.country || 'India'}
                           </Text>
-                          {isSelected && (
+                          {/* {isSelected && (
                             <View style={styles.checkCircleBox}>
                               <Text style={{ fontSize: 10, color: '#ffffff', fontWeight: '900' }}>
                                 ✓
                               </Text>
                             </View>
-                          )}
+                          )} */}
                         </View>
                         <Text style={styles.airportName} numberOfLines={1}>
                           {item.name}
@@ -395,8 +395,9 @@ const styles = StyleSheet.create({
     height: 48,
     backgroundColor: '#f8f9ff',
     borderWidth: 1,
-    borderColor: 'rgba(193, 198, 215, 0.7)',
-    borderRadius: 12,
+    borderColor: '#121c2a',
+    
+    borderRadius: 6,
     paddingHorizontal: 12,
   },
   sheetInput: {
@@ -468,10 +469,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 4,
     height: 32,
-    borderRadius: 16,
+    borderRadius: 6,
     backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: 'rgba(193, 198, 215, 0.6)',
+    borderColor: '#121c2a',
   },
   chipBtnActive: {
     backgroundColor: '#ebf5ff',
@@ -505,16 +506,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 12,
-    borderRadius: 16,
+    borderRadius: 6,
     backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: 'rgba(193, 198, 215, 0.4)',
+    borderColor: '#121c2a',
     marginBottom: 8,
     overflow: 'hidden',
   },
   resultCardSelected: {
-    backgroundColor: '#eff4ff',
-    borderWidth: 2,
+    // backgroundColor: '#eff4ff',
+    borderWidth: 1,
     borderColor: '#0059bb',
   },
   activeStrip: {
@@ -563,7 +564,7 @@ const styles = StyleSheet.create({
   },
   terminalTagPill: {
     alignSelf: 'flex-start',
-    backgroundColor: '#dbeafe',
+    // backgroundColor: '#dbeafe',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
