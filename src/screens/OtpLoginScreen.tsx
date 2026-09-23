@@ -12,7 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { authService } from '../services';
+import { useAuth } from '../hooks';
 
 interface OtpLoginScreenProps {
   navigation: any;
@@ -21,43 +21,29 @@ interface OtpLoginScreenProps {
 export default function OtpLoginScreen({ navigation }: OtpLoginScreenProps) {
   const insets = useSafeAreaInsets();
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [loading, setLoading] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
 
+  const { sendOtp, loading } = useAuth({ navigation });
+
   const handleGetOtp = async () => {
-    // VALIDATION (Mobile Number Check): Check karta hai ki number khali na ho aur kam se kam poore 10 digits ka ho
-    if (!phoneNumber || phoneNumber.length < 10) {
-      Alert.alert('Validation Error', 'Please enter a valid 10-digit mobile number.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { ok, data } = await authService.sendOtp(phoneNumber);
-      setLoading(false);
-      console.log("this is the response we get from the backend here", data);
-
-      if (ok) {
-        setCodeSent(true);
-        if (data.debugOtp) {
-          Alert.alert('OTP Sent', `Verification OTP for test: ${data.debugOtp}`);
-        }
-        setTimeout(() => {
-          setCodeSent(false);
-          navigation.navigate('VerifyOtp', { phoneNumber });
-        }, 800);
-      } else {
-        Alert.alert('Error', data.error || 'Failed to send OTP');
+    const res = await sendOtp(phoneNumber);
+    if (res.success) {
+      setCodeSent(true);
+      if (res.data?.debugOtp) {
+        Alert.alert('OTP Sent', `Verification OTP for test: ${res.data.debugOtp}`);
       }
-    } catch (err) {
-      setLoading(false);
-      // Fallback transition for offline mode
+      setTimeout(() => {
+        setCodeSent(false);
+        navigation.navigate('VerifyOtp', { phoneNumber: res.phoneNumber || phoneNumber });
+      }, 800);
+    } else {
+      // Fallback transition for offline mode if needed
       navigation.navigate('VerifyOtp', { phoneNumber });
     }
   };
 
-
   return (
+
     <>
      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <KeyboardAvoidingView

@@ -1,24 +1,8 @@
 import { API_ENDPOINTS } from './apiConfig';
+import { LoginPayload, RegisterPayload, AuthResponse } from '../types';
 
-export interface LoginPayload {
-  email: string;
-  password?: string;
-}
+export type { LoginPayload, RegisterPayload, AuthResponse };
 
-export interface RegisterPayload {
-  firstName: string;
-  lastName?: string;
-  email: string;
-  phone?: string;
-  password?: string;
-  role?: string;
-}
-
-export interface AuthResponse {
-  ok: boolean;
-  status: number;
-  data: any;
-}
 
 export const authService = {
   

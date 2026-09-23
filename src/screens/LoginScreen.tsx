@@ -12,8 +12,8 @@ import {
   Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { authService } from '../services';
 import { COLORS } from '../theme';
+import { useAuth } from '../hooks';
 
 interface LoginScreenProps {
   navigation: any;
@@ -24,104 +24,21 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
   const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+
+  const { login, loading, isValidEmail, isValidPhone, cleanPhoneNumber } = useAuth({ navigation });
 
   const isLikelyPhone = /^\+?\d+$/.test(loginId.trim());
 
-  // 1. Email Format Validator: Check karta hai ki email me '@' aur domain '.' sahi jagah hai ya nahi (jaise user@example.com)
-  const isValidEmail = (value: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(value);
-  };
-
-  // 2. Phone Cleaning Helper: Spaces, dashes aur country code (+91 ya 0) hata kar clean 10-digit number nikalta hai
-  const cleanPhoneNumber = (value: string): string => {
-    const digits = value.replace(/\D/g, '');
-    if (digits.length === 12 && digits.startsWith('91')) {
-      return digits.slice(2);
-    }
-    if (digits.length === 11 && digits.startsWith('0')) {
-      return digits.slice(1);
-    }
-    return digits;
-  };
-
-  // 3. Mobile Number Validator: Check karta hai ki cleaned number poore 10 digits ka valid Indian mobile number hai ya nahi
-  const isValidPhone = (value: string): boolean => {
-    const cleaned = cleanPhoneNumber(value);
-    return /^[6-9]\d{9}$/.test(cleaned) || /^\d{10}$/.test(cleaned);
-  };
-
   const handleLogin = async () => {
-    const trimmedLoginId = loginId.trim();
-
-    // VALIDATION 1 (Required Check): Agar user ne email ya phone ka box khali chhod diya toh aage mat badho
-    if (!trimmedLoginId) {
-      Alert.alert('Validation Error', 'Please enter your email or mobile number.');
-      return;
-    }
-
-    const isEmail = isValidEmail(trimmedLoginId);
-    const cleanedPhone = cleanPhoneNumber(trimmedLoginId);
-    const isPhone = isValidPhone(trimmedLoginId);
-
-    // VALIDATION 2 (Format Check): Check karo ki input ya toh valid email ho YA valid 10-digit phone number ho
-    if (!isEmail && !isPhone) {
-      const digitsOnly = trimmedLoginId.replace(/\D/g, '');
-      // Agar user ne number type kiya par wo 10 digits se kam ya zyada hai
-      if (digitsOnly.length > 0 && !trimmedLoginId.includes('@')) {
-        Alert.alert(
-          'Validation Error',
-          `Please enter a valid 10-digit mobile number.${digitsOnly.length > 0 ? ` (Entered ${digitsOnly.length} digits)` : ''}`
-        );
-      // Agar user ne '@' likha hai par email ka format galat hai (e.g. bina .com ke)
-      } else if (trimmedLoginId.includes('@')) {
-        Alert.alert(
-          'Validation Error',
-          'Please enter a valid email address (e.g. user@example.com).'
-        );
-      // Agar na number samajh aaya na email
-      } else {
-        Alert.alert(
-          'Validation Error',
-          'Please enter a valid email address or 10-digit mobile number.'
-        );
-      }
-      return;
-    }
-
-    // VALIDATION 3 (Password Required Check): Password khali nahi hona chahiye
-    if (!password) {
-      Alert.alert('Validation Error', 'Please enter your password.');
-      return;
-    }
-
-    // VALIDATION 4 (Password Minimum Length Check): Security ke liye password kam se kam 6 characters ka hona zaroori hai
-    if (password.length < 6) {
-      Alert.alert('Validation Error', 'Password must be at least 6 characters long.');
-      return;
-    }
-
-    const loginIdentifier = isPhone ? cleanedPhone : trimmedLoginId.toLowerCase();
-
-    setLoading(true);
-    try {
-      const { ok, data } = await authService.login({ email: loginIdentifier, password });
-      setLoading(false);
-
-      if (ok) {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'UserHome', params: { user: data.user } }],
-        });
-      } else {
-        Alert.alert('Login Failed', data.error || 'Invalid credentials');
-      }
-    } catch (error) {
-      setLoading(false);
-      Alert.alert('Network Error', 'Could not connect to authentication server.');
+    const res = await login(loginId, password);
+    if (res.success && res.data) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'UserHome', params: { user: res.data.user } }],
+      });
     }
   };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <KeyboardAvoidingView

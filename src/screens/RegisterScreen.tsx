@@ -12,8 +12,8 @@ import {
   StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { authService } from '../services';
 import { COLORS } from '../theme';
+import { useAuth } from '../hooks';
 
 export default function RegisterScreen({ navigation }: { navigation: any }) {
   const [firstName, setFirstName] = useState('');
@@ -22,120 +22,28 @@ export default function RegisterScreen({ navigation }: { navigation: any }) {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [agreeTerms, setAgreeTerms] = useState(true);
-  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // 1. Email Format Validator: Check karta hai ki email sahi format me ho (jaise user@example.com)
-  const isValidEmail = (value: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(value);
-  };
-
-  // 2. Phone Cleaning Helper: Spaces, dashes aur country code (+91 ya 0) hata kar clean 10-digit number banata hai
-  const cleanPhoneNumber = (value: string): string => {
-    const digits = value.replace(/\D/g, '');
-    if (digits.length === 12 && digits.startsWith('91')) {
-      return digits.slice(2);
-    }
-    if (digits.length === 11 && digits.startsWith('0')) {
-      return digits.slice(1);
-    }
-    return digits;
-  };
-
-  // 3. Mobile Number Validator: Check karta hai ki number poore 10 digits ka valid mobile number ho
-  const isValidPhone = (value: string): boolean => {
-    const cleaned = cleanPhoneNumber(value);
-    return /^[6-9]\d{9}$/.test(cleaned) || /^\d{10}$/.test(cleaned);
-  };
+  const { register, loading } = useAuth({ navigation });
 
   const handleRegister = async () => {
-    // VALIDATION 1 (Name Check): First name khali nahi hona chahiye
-    if (!firstName.trim()) {
-      Alert.alert('Validation Error', 'First name is required.');
-      return;
-    }
-
-    // VALIDATION 2 (Email Required & Format Check): Email khali na ho aur standard format me ho
-    const trimmedEmail = email.trim();
-    if (!trimmedEmail) {
-      Alert.alert('Validation Error', 'Email address is required.');
-      return;
-    }
-    if (!isValidEmail(trimmedEmail)) {
-      Alert.alert(
-        'Validation Error',
-        'Please enter a valid email address (e.g. user@example.com).'
-      );
-      return;
-    }
-
-    // VALIDATION 3 (Phone Number Required & Format Check): Mobile number khali na ho aur poore 10 digits ka ho
-    const trimmedPhone = phone.trim();
-    const cleanedPhone = cleanPhoneNumber(trimmedPhone);
-    if (!trimmedPhone) {
-      Alert.alert('Validation Error', 'Mobile number is required.');
-      return;
-    }
-    if (!isValidPhone(trimmedPhone)) {
-      const digitsOnly = trimmedPhone.replace(/\D/g, '');
-      Alert.alert(
-        'Validation Error',
-        `Please enter a valid 10-digit mobile number.${digitsOnly.length > 0 ? ` (Entered ${digitsOnly.length} digits)` : ''}`
-      );
-      return;
-    }
-
-    // VALIDATION 4 (Password Required & Length Check): Password khali na ho aur kam se kam 6 characters ka ho
-    if (!password) {
-      Alert.alert('Validation Error', 'Password is required.');
-      return;
-    }
-    if (password.length < 6) {
-      Alert.alert('Validation Error', 'Password must be at least 6 characters long.');
-      return;
-    }
-
-    // VALIDATION 5 (Terms & Conditions Check): App policies agree karna zaroori hai
-    if (!agreeTerms) {
-      Alert.alert('Terms & Conditions', 'Please agree to FlyGo Terms and Privacy Policy to continue.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { ok, data } = await authService.register({
+    const res = await register(
+      {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        email: trimmedEmail.toLowerCase(),
-        phone: cleanedPhone,
+        email: email.trim().toLowerCase(),
+        phone,
         password,
         role: 'user',
-      });
-      setLoading(false);
-      console.log('Registration response:', data);
+      },
+      agreeTerms
+    );
 
-      if (!ok) {
-        const errorMsg =
-          typeof data.message === 'string'
-          ? data.message
-          : typeof data.error === 'string'
-          ? data.error
-          : 'Registration failed';
-        Alert.alert('Registration Failed', errorMsg);
-        return;
-      }
-
-      Alert.alert('Success', 'Registration successful!', [
-        { text: 'OK', onPress: () => navigation.navigate('Login') },
-      ]);
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Network Error', 'Cannot connect to server');
-    } finally {
-      setLoading(false);
+    if (res.success) {
+      navigation.navigate('Login');
     }
   };
+
 
   return (
     <SafeAreaView style={styles.safeArea}>

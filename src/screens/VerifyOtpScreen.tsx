@@ -12,7 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { authService } from '../services';
+import { useAuth } from '../hooks';
 
 interface VerifyOtpScreenProps {
   navigation: any;
@@ -26,8 +26,9 @@ export default function VerifyOtpScreen({ navigation, route }: VerifyOtpScreenPr
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [activeInput, setActiveInput] = useState(5);
   const [timer, setTimer] = useState(30);
-  const [loading, setLoading] = useState(false);
   const [showError, setShowError] = useState(true);
+
+  const { verifyOtp, loading } = useAuth({ navigation });
 
   const inputRefs = useRef<Array<any>>([]);
 
@@ -59,29 +60,16 @@ export default function VerifyOtpScreen({ navigation, route }: VerifyOtpScreenPr
 
   const handleVerify = async () => {
     const enteredCode = otp.join('');
-    // VALIDATION (OTP Length Check): Check karta hai ki user ne 6-digit OTP ke saare 6 boxes fill kiye hain ya nahi
-    if (enteredCode.length < 6) {
-      Alert.alert('Incomplete Code', 'Please enter all 6 digits of the OTP.');
-      return;
-    }
-    setLoading(true);
     setShowError(false);
 
-    try {
-      const { ok, data } = await authService.verifyOtp(phone, enteredCode);
-      setLoading(false);
+    const res = await verifyOtp(phone, enteredCode);
 
-      if (ok) {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'UserHome', params: { user: data.user || { phone } } }],
-        });
-      } else {
-        setShowError(true);
-        Alert.alert('Verification Error', data.error || 'Incorrect OTP code');
-      }
-    } catch (err) {
-      setLoading(false);
+    if (res.success && res.data) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'UserHome', params: { user: res.data.user || { phone } } }],
+      });
+    } else {
       // Demo fallback in case backend is offline
       if (enteredCode === '482093' || enteredCode.length === 6) {
         navigation.reset({
@@ -93,6 +81,7 @@ export default function VerifyOtpScreen({ navigation, route }: VerifyOtpScreenPr
       }
     }
   };
+
 
 
   return (
